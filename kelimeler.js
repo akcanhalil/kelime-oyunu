@@ -1,4 +1,4 @@
-const kelimeler = [
+const wordDatabase = [
   {
     "ingilizce": "Trifling",
     "turkce": "Önemsiz",
