@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelime Uygulaması - Tam Sürüm</title>
+    <title>Kelime Uygulaması - Cloze Test</title>
     <style>
         :root {
             --bg-color: #f4f1ea;
@@ -89,6 +89,7 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* ÖĞRENME KARTLARI */
         .scrapbook-card {
             background: var(--card-bg);
             padding: 40px 20px 20px;
@@ -125,106 +126,57 @@
         .btn-wrong:hover { background: #ffebeb; border-color: #d9534f; color: #d9534f; }
         .btn-right:hover { background: #ebffec; border-color: #28a745; color: #28a745; }
 
-        #balloon-container {
-            margin: 20px auto;
-            height: 120px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-        #balloon {
-            width: 50px;
-            height: 65px;
-            background-color: #ff4757;
-            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
-            position: relative;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
-            z-index: 2;
-        }
-        #balloon::after {
-            content: '';
-            position: absolute;
-            bottom: -15px; left: 50%;
-            width: 2px; height: 15px;
-            background: var(--text-color);
-        }
-        
-        .shard {
-            position: absolute;
-            width: 15px;
-            height: 15px;
-            background-color: #ff4757;
-            border-radius: 40% 60% 70% 30%;
-            opacity: 0;
-            z-index: 1;
-        }
-        @keyframes explode {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0); opacity: 0; }
-        }
-
-        #word-display {
-            font-size: 2.2em;
-            letter-spacing: 5px;
-            font-weight: bold;
-            margin: 20px 0;
-            white-space: nowrap; 
-            overflow-x: auto; 
-            padding-bottom: 10px;
-        }
-        
-        #hint-btn {
-            background: #fff3cd;
-            border: 2px solid #856404;
-            color: #856404;
-            padding: 8px 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 15px;
-            font-family: inherit;
-        }
-
-        .keyboard {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
+        /* CLOZE TEST (BOŞLUK DOLDURMA) */
+        #cloze-container {
+            background: var(--card-bg);
+            padding: 30px 20px;
+            border: 2px solid var(--card-border);
+            box-shadow: 5px 5px 15px var(--shadow-color);
             margin-top: 20px;
+            text-align: left;
         }
-        .key {
-            padding: 10px 14px;
+        #cloze-sentence {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+        .cloze-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .cloze-btn {
+            padding: 12px;
             font-size: 1.1em;
-            border: 1px solid var(--btn-text);
-            background-color: var(--btn-bg);
+            border: 2px solid var(--btn-text);
+            background: var(--btn-bg);
             color: var(--btn-text);
-            cursor: pointer;
             font-family: inherit;
             font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
         }
+        .cloze-btn:hover { background: var(--grid-color); }
+        .cloze-btn.correct { background: #28a745 !important; color: #fff !important; border-color: #28a745 !important; }
+        .cloze-btn.wrong { background: #d9534f !important; color: #fff !important; border-color: #d9534f !important; }
+
+        /* BALON OYUNU */
+        #balloon-container { margin: 20px auto; height: 120px; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+        #balloon { width: 50px; height: 65px; background-color: #ff4757; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; position: relative; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2); z-index: 2; }
+        #balloon::after { content: ''; position: absolute; bottom: -15px; left: 50%; width: 2px; height: 15px; background: var(--text-color); }
+        .shard { position: absolute; width: 15px; height: 15px; background-color: #ff4757; border-radius: 40% 60% 70% 30%; opacity: 0; z-index: 1; }
+        @keyframes explode { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0); opacity: 0; } }
+        #word-display { font-size: 2.2em; letter-spacing: 5px; font-weight: bold; margin: 20px 0; white-space: nowrap; overflow-x: auto; padding-bottom: 10px; }
+        #hint-btn { background: #fff3cd; border: 2px solid #856404; color: #856404; padding: 8px 15px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-family: inherit; }
+        .keyboard { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 20px; }
+        .key { padding: 10px 14px; font-size: 1.1em; border: 1px solid var(--btn-text); background-color: var(--btn-bg); color: var(--btn-text); cursor: pointer; font-family: inherit; font-weight: bold; }
         .key:active { transform: scale(0.95); }
         .key:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        #restart-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1.1em;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            display: none;
-            font-family: inherit;
-        }
+        #restart-btn { margin-top: 20px; padding: 10px 20px; font-size: 1.1em; background-color: #28a745; color: #fff; border: none; cursor: pointer; display: none; font-family: inherit; }
 
-        .score-board {
-            background: var(--card-bg);
-            border: 2px solid var(--card-border);
-            padding: 20px;
-            margin-top: 20px;
-            font-size: 1.2em;
-        }
+        .score-board { background: var(--card-bg); border: 2px solid var(--card-border); padding: 20px; margin-top: 20px; font-size: 1.2em; }
         .score-board span { font-weight: bold; font-size: 1.5em; color: #28a745; }
     </style>
 </head>
@@ -238,42 +190,44 @@
         <button id="theme-toggle">🌙 Mod</button>
     </div>
 
+    <!-- 1. ÖĞRENME EKRANI -->
     <div id="ogrenme-ekrani" class="section active">
         <h2>Günün Kelimeleri</h2>
         <div id="card-wrapper"></div>
     </div>
 
+    <!-- 2. OYUN EKRANI -->
     <div id="oyun-ekrani" class="section">
         <div id="score-tracker" style="font-weight:bold; margin-bottom:10px; color:#28a745;">Seri: <span id="current-streak">0</span></div>
-        <div id="balloon-container">
-            <div id="balloon"></div>
-        </div>
+        <div id="balloon-container"><div id="balloon"></div></div>
         <div id="status-display" style="color: #888; font-weight: bold;">Yanlış Harf: 0 / 5</div>
         <h3 id="question-text">Soru Yükleniyor...</h3>
-        
         <div id="word-display">_ _ _ _</div>
-        
         <button id="hint-btn">💡 Harf Al (Kalan: <span id="hint-left">3</span>)</button>
-        
         <div class="keyboard" id="keyboard"></div>
-        
         <h3 id="message-box" style="margin-top: 20px;"></h3>
         <button id="restart-btn">Yeni Soruya Geç</button>
     </div>
 
+    <!-- 3. EGZERSİZ EKRANI (CLOZE TEST) -->
     <div id="egzersiz-ekrani" class="section">
-        <h2>📝 Egzersizler</h2>
-        <div class="scrapbook-card">
-            <p>Eşleştirme ve çoktan seçmeli testler yakında buraya eklenecek...</p>
+        <h2>📝 Cloze Test (Boşluk Doldurma)</h2>
+        <div id="cloze-container">
+            <h3 id="cloze-sentence">Soru Yükleniyor...</h3>
+            <div class="cloze-options" id="cloze-options">
+                <!-- Butonlar JavaScript ile gelecek -->
+            </div>
+            <h4 id="cloze-feedback" style="margin-top: 20px; text-align: center;"></h4>
+            <div style="text-align: center;">
+                <button id="cloze-next-btn" style="display:none; margin-top: 15px; padding: 10px 20px; font-size: 1.1em; background-color: var(--text-color); color: var(--bg-color); border: none; cursor: pointer; font-family: inherit; font-weight: bold;">Sonraki Soru ➔</button>
+            </div>
         </div>
     </div>
 
+    <!-- 4. SKOR EKRANI -->
     <div id="skor-ekrani" class="section">
         <h2>🏆 En Yüksek Skorlar</h2>
-        <div class="score-board">
-            En Uzun Galibiyet Serisi<br><br>
-            <span id="max-score-display">0</span> Kelime
-        </div>
+        <div class="score-board">En Uzun Galibiyet Serisi<br><br><span id="max-score-display">0</span> Kelime</div>
     </div>
 
 <script>
@@ -285,25 +239,45 @@
         document.getElementById("theme-toggle").textContent = isDarkMode ? "☀️ Mod" : "🌙 Mod";
     });
 
+    // YDS/YÖKDİL Seviyesi 10 Kelimelik JSON Veritabanı
     const wordDatabase = [
-        { id: 1, word: "deception", turkish: "aldatma", synonyms: ["dishonesty"], antonyms: ["honesty"] },
-        { id: 2, word: "humid", turkish: "nemli", synonyms: ["muggy"], antonyms: ["dry"] },
-        { id: 3, word: "disperse", turkish: "dağıtmak", synonyms: ["scatter"], antonyms: ["gather"] },
-        { id: 4, word: "unprecedented", turkish: "eşi benzeri görülmemiş", synonyms: ["unparalleled"], antonyms: ["normal"] }
+        { id: 1, word: "deception", turkish: "aldatma, hile", synonyms: ["dishonesty", "trickery"], antonyms: ["honesty", "truth"], sentence: "He was found guilty of obtaining money by deception." },
+        { id: 2, word: "humid", turkish: "nemli", synonyms: ["muggy", "moist"], antonyms: ["dry"], sentence: "New York is very hot and humid in the summer." },
+        { id: 3, word: "disperse", turkish: "dağıtmak, dağılmak", synonyms: ["scatter", "distribute"], antonyms: ["gather", "collect"], sentence: "Police used tear gas to disperse the crowd." },
+        { id: 4, word: "unprecedented", turkish: "eşi görülmemiş", synonyms: ["unparalleled", "exceptional"], antonyms: ["normal", "common"], sentence: "The internet has given people unprecedented access to information." },
+        { id: 5, word: "ambiguous", turkish: "belirsiz, iki anlamlı", synonyms: ["vague", "unclear"], antonyms: ["clear", "explicit"], sentence: "His reply to my question was somewhat ambiguous." },
+        { id: 6, word: "fluctuate", turkish: "dalgalanmak", synonyms: ["vary", "change"], antonyms: ["stabilize", "remain"], sentence: "Vegetable prices fluctuate according to the season." },
+        { id: 7, word: "reluctant", turkish: "isteksiz", synonyms: ["unwilling", "hesitant"], antonyms: ["willing", "eager"], sentence: "Many parents feel reluctant to talk openly with their children." },
+        { id: 8, word: "vital", turkish: "hayati, çok önemli", synonyms: ["crucial", "essential"], antonyms: ["unimportant", "trivial"], sentence: "Vitamins are vital for maintaining good health." },
+        { id: 9, word: "consequence", turkish: "sonuç", synonyms: ["result", "outcome"], antonyms: ["cause", "origin"], sentence: "Global warming is a direct consequence of deforestation." },
+        { id: 10, word: "abundant", turkish: "bol, bereketli", synonyms: ["plentiful", "copious"], antonyms: ["scarce", "rare"], sentence: "There is abundant evidence that cars have a harmful effect on the environment." }
     ];
 
-    let learningDeck = [...wordDatabase];
-    let currentCardIndex = 0;
-
+    // Menü Geçişleri
     document.getElementById("nav-learn").addEventListener("click", () => switchTab('ogrenme-ekrani'));
     document.getElementById("nav-game").addEventListener("click", () => switchTab('oyun-ekrani'));
-    document.getElementById("nav-exercise").addEventListener("click", () => switchTab('egzersiz-ekrani'));
     document.getElementById("nav-score").addEventListener("click", () => switchTab('skor-ekrani'));
+    document.getElementById("nav-exercise").addEventListener("click", () => {
+        switchTab('egzersiz-ekrani');
+        initClozeTest(); // Egzersize tıklandığında soruyu yükle
+    });
 
     function switchTab(tabId) {
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
     }
+
+    // --- SESLİ OKUMA (TEXT TO SPEECH) ---
+    window.playAudio = function(word) {
+        let utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.85; // Net anlaşılması için biraz yavaş
+        window.speechSynthesis.speak(utterance);
+    };
+
+    // --- ÖĞRENME KARTI ---
+    let learningDeck = [...wordDatabase];
+    let currentCardIndex = 0;
 
     window.markLearned = function() { currentCardIndex++; loadNextCard(); };
     window.markUnlearned = function() { learningDeck.push(learningDeck[currentCardIndex]); currentCardIndex++; loadNextCard(); };
@@ -317,7 +291,10 @@
         let item = learningDeck[currentCardIndex];
         wrapper.innerHTML = `
             <div class="scrapbook-card">
-                <h2 style="font-size: 2em; margin-top: 5px;">${item.word.toUpperCase()}</h2>
+                <h2 style="font-size: 2em; margin-top: 5px; display:flex; justify-content:center; align-items:center; gap:10px;">
+                    ${item.word.toUpperCase()}
+                    <button onclick="playAudio('${item.word}')" style="font-size:0.6em; padding:5px 10px; border:2px solid var(--text-color); border-radius:50%; background:transparent; cursor:pointer;">🔊</button>
+                </h2>
                 <p><strong>Türkçe:</strong> ${item.turkish}</p>
                 <p><strong>Eş Anlam:</strong> ${item.synonyms.join(', ')}</p>
                 <p><strong>Zıt Anlam:</strong> ${item.antonyms.join(', ')}</p>
@@ -328,6 +305,78 @@
             </div>`;
     }
 
+    // --- CLOZE TEST (BOŞLUK DOLDURMA) MANTIĞI ---
+    let clozeDeck = [...wordDatabase];
+    let currentClozeItem = null;
+
+    function initClozeTest() {
+        if (clozeDeck.length === 0) clozeDeck = [...wordDatabase]; 
+        
+        const randomIndex = Math.floor(Math.random() * clozeDeck.length);
+        currentClozeItem = clozeDeck[randomIndex];
+        clozeDeck.splice(randomIndex, 1); 
+
+        // Kelimeyi cümleden gizle
+        const regex = new RegExp("\\b" + currentClozeItem.word + "\\b", "gi");
+        const hiddenSentence = currentClozeItem.sentence.replace(regex, "_______");
+        
+        document.getElementById("cloze-sentence").innerHTML = hiddenSentence;
+        document.getElementById("cloze-next-btn").style.display = "none";
+        document.getElementById("cloze-feedback").textContent = "";
+
+        // Şıkları hazırla (1 doğru, 3 yanlış)
+        let options = [currentClozeItem.word];
+        let wrongOptions = wordDatabase.filter(w => w.id !== currentClozeItem.id);
+        
+        wrongOptions.sort(() => 0.5 - Math.random());
+        options.push(wrongOptions[0].word, wrongOptions[1].word, wrongOptions[2].word);
+        
+        options.sort(() => 0.5 - Math.random());
+
+        const optionsContainer = document.getElementById("cloze-options");
+        optionsContainer.innerHTML = "";
+        
+        options.forEach(opt => {
+            let btn = document.createElement("button");
+            btn.className = "cloze-btn";
+            btn.textContent = opt.toLowerCase();
+            btn.onclick = () => checkClozeAnswer(btn, opt);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkClozeAnswer(btn, selectedWord) {
+        const buttons = document.querySelectorAll(".cloze-btn");
+        buttons.forEach(b => b.disabled = true); // Diğer şıkları kapat
+
+        if (selectedWord === currentClozeItem.word) {
+            btn.classList.add("correct");
+            document.getElementById("cloze-feedback").textContent = "✅ Harika! Doğru bildin.";
+            document.getElementById("cloze-feedback").style.color = "#28a745";
+            
+            // Cümleyi açık ve vurgulu haliyle göster
+            document.getElementById("cloze-sentence").innerHTML = currentClozeItem.sentence.replace(
+                new RegExp("\\b" + currentClozeItem.word + "\\b", "gi"), 
+                `<span style="color:#28a745; font-weight:bold; text-decoration:underline;">${currentClozeItem.word}</span>`
+            );
+        } else {
+            btn.classList.add("wrong");
+            document.getElementById("cloze-feedback").textContent = `❌ Yanlış! Doğru cevap: ${currentClozeItem.word.toUpperCase()}`;
+            document.getElementById("cloze-feedback").style.color = "#d9534f";
+            
+            // Doğru şıkkı yeşil yap
+            buttons.forEach(b => {
+                if (b.textContent === currentClozeItem.word.toLowerCase()) {
+                    b.classList.add("correct");
+                }
+            });
+        }
+        document.getElementById("cloze-next-btn").style.display = "inline-block";
+    }
+
+    document.getElementById("cloze-next-btn").addEventListener("click", initClozeTest);
+
+    // --- BALON OYUNU VE SKOR MANTIĞI ---
     let targetWord = "";
     let currentLetterIndex = 0; 
     let currentErrors = 0;
@@ -335,7 +384,6 @@
     let isGameOver = false;
     let hintsUsed = 0;
     const maxHints = 3;
-    
     let currentStreak = 0;
     let maxScore = localStorage.getItem("maxBalloonScore") || 0;
     document.getElementById("max-score-display").textContent = maxScore;
@@ -353,15 +401,9 @@
         isGameOver = false;
 
         let availableHints = [];
-        if (selectedItem.synonyms && selectedItem.synonyms.length > 0) {
-            availableHints.push({ title: "Eş Anlam", text: selectedItem.synonyms.join(", ") });
-        }
-        if (selectedItem.antonyms && selectedItem.antonyms.length > 0) {
-            availableHints.push({ title: "Zıt Anlam", text: selectedItem.antonyms.join(", ") });
-        }
-        if (selectedItem.turkish) {
-            availableHints.push({ title: "Türkçe", text: selectedItem.turkish });
-        }
+        if (selectedItem.synonyms && selectedItem.synonyms.length > 0) availableHints.push({ title: "Eş Anlam", text: selectedItem.synonyms.join(", ") });
+        if (selectedItem.antonyms && selectedItem.antonyms.length > 0) availableHints.push({ title: "Zıt Anlam", text: selectedItem.antonyms.join(", ") });
+        if (selectedItem.turkish) availableHints.push({ title: "Türkçe", text: selectedItem.turkish });
 
         const randomHint = availableHints[Math.floor(Math.random() * availableHints.length)];
         document.getElementById("question-text").textContent = `İpucu (${randomHint.title}): ${randomHint.text.toUpperCase()}`;
@@ -374,7 +416,6 @@
         balloon.style.transform = "scale(1)";
         document.getElementById("hint-left").textContent = maxHints;
         document.getElementById("hint-btn").disabled = false;
-        
         document.querySelectorAll(".shard").forEach(el => el.remove());
         
         createKeyboard();
@@ -385,7 +426,6 @@
         if (isGameOver || hintsUsed >= maxHints || currentLetterIndex >= targetWord.length) return;
         hintsUsed++;
         currentLetterIndex++; 
-        
         document.getElementById("hint-left").textContent = maxHints - hintsUsed;
         const balloon = document.getElementById("balloon");
         balloon.style.transform = `scale(${1 + (hintsUsed * 0.4)})`; 
@@ -402,14 +442,12 @@
     function triggerExplosion() {
         const container = document.getElementById("balloon-container");
         document.getElementById("balloon").style.display = "none"; 
-        
         for(let i=0; i<6; i++) {
             let shard = document.createElement("div");
             shard.className = "shard";
             let tx = (Math.random() * 100 - 50) + "px";
             let ty = (Math.random() * -100 - 20) + "px";
             let rot = (Math.random() * 360) + "deg";
-            
             shard.style.setProperty('--tx', tx);
             shard.style.setProperty('--ty', ty);
             shard.style.setProperty('--rot', rot);
@@ -432,27 +470,22 @@
 
     function handleGuess(letter, btn) {
         if (isGameOver) return;
-        
         let originalColor = btn.style.backgroundColor;
         if (letter === targetWord[currentLetterIndex]) {
             currentLetterIndex++; 
-            btn.style.backgroundColor = "#28a745"; 
-            btn.style.color = "#fff";
+            btn.style.backgroundColor = "#28a745"; btn.style.color = "#fff";
             setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
         } else {
             currentErrors++; 
-            btn.style.backgroundColor = "#d9534f"; 
-            btn.style.color = "#fff";
+            btn.style.backgroundColor = "#d9534f"; btn.style.color = "#fff";
             setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
         }
-        
         checkGameStatus();
         updateGameUI();
     }
 
     function checkGameStatus() {
         if (isGameOver) return;
-        
         if (currentErrors >= maxErrors) {
             triggerExplosion();
             finalizeGame(false, "❌ Yanlış harfler bitti!");
@@ -478,9 +511,7 @@
         } else {
             currentStreak = 0; 
         }
-        
         document.getElementById("current-streak").textContent = currentStreak;
-        
         document.querySelectorAll(".key").forEach(key => key.disabled = true);
         document.getElementById("hint-btn").disabled = true;
         document.getElementById("restart-btn").style.display = "inline-block";
@@ -489,18 +520,15 @@
 
     function updateGameUI() {
         document.getElementById("status-display").textContent = `Yanlış Harf: ${currentErrors} / ${maxErrors}`;
-        
         let displayStr = "";
         for (let i = 0; i < targetWord.length; i++) {
-            if (i < currentLetterIndex) {
-                displayStr += targetWord[i] + " "; 
-            } else {
-                displayStr += "_ "; 
-            }
+            if (i < currentLetterIndex) { displayStr += targetWord[i] + " "; } 
+            else { displayStr += "_ "; }
         }
         document.getElementById("word-display").textContent = displayStr.trim();
     }
 
+    // İlk Yüklemeler
     loadNextCard();
     initGame();
 })();
@@ -508,4 +536,3 @@
 
 </body>
 </html>
-    
