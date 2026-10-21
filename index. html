@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelime Uygulaması - Tam Sürüm</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --text-color: #333;
+            --nav-bg: #2a2a2a;
+            --nav-text: #fff;
+            --card-bg: #fff;
+            --card-border: #ddd;
+            --btn-bg: #fff;
+            --btn-text: #333;
+            --grid-color: #d5d0c4;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --nav-bg: #111;
+            --nav-text: #fff;
+            --card-bg: #2d2d2d;
+            --card-border: #444;
+            --btn-bg: #3d3d3d;
+            --btn-text: #e0e0e0;
+            --grid-color: #333;
+            --shadow-color: rgba(0,0,0,0.5);
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color); 
+            background-image: radial-gradient(var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .navbar {
+            background-color: var(--nav-bg);
+            width: 100%;
+            padding: 15px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar button {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: 2px solid var(--btn-text);
+            padding: 8px 15px;
+            font-size: 1em;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px var(--btn-text);
+            transition: 0.1s;
+        }
+        .navbar button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px var(--btn-text);
+        }
+
+        .section {
+            display: none;
+            padding: 30px 15px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .section.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .scrapbook-card {
+            background: var(--card-bg);
+            padding: 40px 20px 20px;
+            border: 2px solid var(--card-border);
+            box-shadow: 5px 5px 15px var(--shadow-color);
+            position: relative;
+            margin: 20px auto;
+        }
+        .scrapbook-card::before {
+            content: '';
+            position: absolute;
+            top: -12px; left: 50%;
+            transform: translateX(-50%);
+            width: 80px; height: 25px;
+            background: rgba(255, 255, 200, 0.7);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .card-controls {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .card-controls button {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border: 2px dashed var(--btn-text);
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-wrong:hover { background: #ffebeb; border-color: #d9534f; color: #d9534f; }
+        .btn-right:hover { background: #ebffec; border-color: #28a745; color: #28a745; }
+
+        #balloon-container {
+            margin: 20px auto;
+            height: 120px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        #balloon {
+            width: 50px;
+            height: 65px;
+            background-color: #ff4757;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        #balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -15px; left: 50%;
+            width: 2px; height: 15px;
+            background: var(--text-color);
+        }
+        
+        .shard {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #ff4757;
+            border-radius: 40% 60% 70% 30%;
+            opacity: 0;
+            z-index: 1;
+        }
+        @keyframes explode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0); opacity: 0; }
+        }
+
+        #word-display {
+            font-size: 2.2em;
+            letter-spacing: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+            white-space: nowrap; 
+            overflow-x: auto; 
+            padding-bottom: 10px;
+        }
+        
+        #hint-btn {
+            background: #fff3cd;
+            border: 2px solid #856404;
+            color: #856404;
+            padding: 8px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .key {
+            padding: 10px 14px;
+            font-size: 1.1em;
+            border: 1px solid var(--btn-text);
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .key:active { transform: scale(0.95); }
+        .key:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        #restart-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: none;
+            font-family: inherit;
+        }
+
+        .score-board {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        .score-board span { font-weight: bold; font-size: 1.5em; color: #28a745; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <button id="nav-learn">📚 Öğrenme</button>
+        <button id="nav-game">🎈 Balon</button>
+        <button id="nav-exercise">📝 Egzersizler</button>
+        <button id="nav-score">🏆 Skor</button>
+        <button id="theme-toggle">🌙 Mod</button>
+    </div>
+
+    <div id="ogrenme-ekrani" class="section active">
+        <h2>Günün Kelimeleri</h2>
+        <div id="card-wrapper"></div>
+    </div>
+
+    <div id="oyun-ekrani" class="section">
+        <div id="score-tracker" style="font-weight:bold; margin-bottom:10px; color:#28a745;">Seri: <span id="current-streak">0</span></div>
+        <div id="balloon-container">
+            <div id="balloon"></div>
+        </div>
+        <div id="status-display" style="color: #888; font-weight: bold;">Yanlış Harf: 0 / 5</div>
+        <h3 id="question-text">Soru Yükleniyor...</h3>
+        
+        <div id="word-display">_ _ _ _</div>
+        
+        <button id="hint-btn">💡 Harf Al (Kalan: <span id="hint-left">3</span>)</button>
+        
+        <div class="keyboard" id="keyboard"></div>
+        
+        <h3 id="message-box" style="margin-top: 20px;"></h3>
+        <button id="restart-btn">Yeni Soruya Geç</button>
+    </div>
+
+    <div id="egzersiz-ekrani" class="section">
+        <h2>📝 Egzersizler</h2>
+        <div class="scrapbook-card">
+            <p>Eşleştirme ve çoktan seçmeli testler yakında buraya eklenecek...</p>
+        </div>
+    </div>
+
+    <div id="skor-ekrani" class="section">
+        <h2>🏆 En Yüksek Skorlar</h2>
+        <div class="score-board">
+            En Uzun Galibiyet Serisi<br><br>
+            <span id="max-score-display">0</span> Kelime
+        </div>
+    </div>
+
+<script>
+(function() {
+    let isDarkMode = false;
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        isDarkMode = !isDarkMode;
+        document.body.setAttribute("data-theme", isDarkMode ? "dark" : "light");
+        document.getElementById("theme-toggle").textContent = isDarkMode ? "☀️ Mod" : "🌙 Mod";
+    });
+
+    const wordDatabase = [
+        { id: 1, word: "deception", turkish: "aldatma", synonyms: ["dishonesty"], antonyms: ["honesty"] },
+        { id: 2, word: "humid", turkish: "nemli", synonyms: ["muggy"], antonyms: ["dry"] },
+        { id: 3, word: "disperse", turkish: "dağıtmak", synonyms: ["scatter"], antonyms: ["gather"] },
+        { id: 4, word: "unprecedented", turkish: "eşi benzeri görülmemiş", synonyms: ["unparalleled"], antonyms: ["normal"] }
+    ];
+
+    let learningDeck = [...wordDatabase];
+    let currentCardIndex = 0;
+
+    document.getElementById("nav-learn").addEventListener("click", () => switchTab('ogrenme-ekrani'));
+    document.getElementById("nav-game").addEventListener("click", () => switchTab('oyun-ekrani'));
+    document.getElementById("nav-exercise").addEventListener("click", () => switchTab('egzersiz-ekrani'));
+    document.getElementById("nav-score").addEventListener("click", () => switchTab('skor-ekrani'));
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    window.markLearned = function() { currentCardIndex++; loadNextCard(); };
+    window.markUnlearned = function() { learningDeck.push(learningDeck[currentCardIndex]); currentCardIndex++; loadNextCard(); };
+
+    function loadNextCard() {
+        const wrapper = document.getElementById("card-wrapper");
+        if (currentCardIndex >= learningDeck.length) {
+            wrapper.innerHTML = `<div class="scrapbook-card"><h3>🎉 Harika!</h3><p>Bugünlük bitti.</p></div>`;
+            return;
+        }
+        let item = learningDeck[currentCardIndex];
+        wrapper.innerHTML = `
+            <div class="scrapbook-card">
+                <h2 style="font-size: 2em; margin-top: 5px;">${item.word.toUpperCase()}</h2>
+                <p><strong>Türkçe:</strong> ${item.turkish}</p>
+                <p><strong>Eş Anlam:</strong> ${item.synonyms.join(', ')}</p>
+                <p><strong>Zıt Anlam:</strong> ${item.antonyms.join(', ')}</p>
+                <div class="card-controls">
+                    <button class="btn-wrong" onclick="markUnlearned()">❌ Öğrenmedim</button>
+                    <button class="btn-right" onclick="markLearned()">✅ Öğrendim</button>
+                </div>
+            </div>`;
+    }
+
+    let targetWord = "";
+    let currentLetterIndex = 0; 
+    let currentErrors = 0;
+    const maxErrors = 5;
+    let isGameOver = false;
+    let hintsUsed = 0;
+    const maxHints = 3;
+    
+    let currentStreak = 0;
+    let maxScore = localStorage.getItem("maxBalloonScore") || 0;
+    document.getElementById("max-score-display").textContent = maxScore;
+
+    document.getElementById("hint-btn").addEventListener("click", useHint);
+    document.getElementById("restart-btn").addEventListener("click", initGame);
+
+    function initGame() {
+        const selectedItem = wordDatabase[Math.floor(Math.random() * wordDatabase.length)];
+        targetWord = selectedItem.word.toUpperCase();
+        
+        currentLetterIndex = 0;
+        currentErrors = 0;
+        hintsUsed = 0;
+        isGameOver = false;
+
+        let availableHints = [];
+        if (selectedItem.synonyms && selectedItem.synonyms.length > 0) {
+            availableHints.push({ title: "Eş Anlam", text: selectedItem.synonyms.join(", ") });
+        }
+        if (selectedItem.antonyms && selectedItem.antonyms.length > 0) {
+            availableHints.push({ title: "Zıt Anlam", text: selectedItem.antonyms.join(", ") });
+        }
+        if (selectedItem.turkish) {
+            availableHints.push({ title: "Türkçe", text: selectedItem.turkish });
+        }
+
+        const randomHint = availableHints[Math.floor(Math.random() * availableHints.length)];
+        document.getElementById("question-text").textContent = `İpucu (${randomHint.title}): ${randomHint.text.toUpperCase()}`;
+
+        document.getElementById("message-box").textContent = "";
+        document.getElementById("restart-btn").style.display = "none";
+        
+        const balloon = document.getElementById("balloon");
+        balloon.style.display = "block";
+        balloon.style.transform = "scale(1)";
+        document.getElementById("hint-left").textContent = maxHints;
+        document.getElementById("hint-btn").disabled = false;
+        
+        document.querySelectorAll(".shard").forEach(el => el.remove());
+        
+        createKeyboard();
+        updateGameUI();
+    }
+
+    function useHint() {
+        if (isGameOver || hintsUsed >= maxHints || currentLetterIndex >= targetWord.length) return;
+        hintsUsed++;
+        currentLetterIndex++; 
+        
+        document.getElementById("hint-left").textContent = maxHints - hintsUsed;
+        const balloon = document.getElementById("balloon");
+        balloon.style.transform = `scale(${1 + (hintsUsed * 0.4)})`; 
+
+        if (hintsUsed >= maxHints) {
+            triggerExplosion();
+            finalizeGame(false, "💥 Balon fazla şişti ve PATLADI!");
+        } else {
+            checkGameStatus();
+            updateGameUI();
+        }
+    }
+
+    function triggerExplosion() {
+        const container = document.getElementById("balloon-container");
+        document.getElementById("balloon").style.display = "none"; 
+        
+        for(let i=0; i<6; i++) {
+            let shard = document.createElement("div");
+            shard.className = "shard";
+            let tx = (Math.random() * 100 - 50) + "px";
+            let ty = (Math.random() * -100 - 20) + "px";
+            let rot = (Math.random() * 360) + "deg";
+            
+            shard.style.setProperty('--tx', tx);
+            shard.style.setProperty('--ty', ty);
+            shard.style.setProperty('--rot', rot);
+            shard.style.animation = "explode 0.6s forwards ease-out";
+            container.appendChild(shard);
+        }
+    }
+
+    function createKeyboard() {
+        const keyboardEl = document.getElementById("keyboard");
+        keyboardEl.innerHTML = "";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
+            const btn = document.createElement("button");
+            btn.textContent = letter;
+            btn.className = "key";
+            btn.addEventListener("click", () => handleGuess(letter, btn));
+            keyboardEl.appendChild(btn);
+        });
+    }
+
+    function handleGuess(letter, btn) {
+        if (isGameOver) return;
+        
+        let originalColor = btn.style.backgroundColor;
+        if (letter === targetWord[currentLetterIndex]) {
+            currentLetterIndex++; 
+            btn.style.backgroundColor = "#28a745"; 
+            btn.style.color = "#fff";
+            setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
+        } else {
+            currentErrors++; 
+            btn.style.backgroundColor = "#d9534f"; 
+            btn.style.color = "#fff";
+            setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
+        }
+        
+        checkGameStatus();
+        updateGameUI();
+    }
+
+    function checkGameStatus() {
+        if (isGameOver) return;
+        
+        if (currentErrors >= maxErrors) {
+            triggerExplosion();
+            finalizeGame(false, "❌ Yanlış harfler bitti!");
+        } 
+        else if (currentLetterIndex === targetWord.length) {
+            finalizeGame(true, "🎉 TEBRİKLER! Balonu kurtardın.");
+        }
+    }
+
+    function finalizeGame(isWin, message) {
+        isGameOver = true;
+        const msgBox = document.getElementById("message-box");
+        msgBox.textContent = `${message} Kelime: ${targetWord}`;
+        msgBox.style.color = isWin ? "#28a745" : "#d9534f";
+        
+        if (isWin) {
+            currentStreak++;
+            if (currentStreak > maxScore) {
+                maxScore = currentStreak;
+                localStorage.setItem("maxBalloonScore", maxScore);
+                document.getElementById("max-score-display").textContent = maxScore;
+            }
+        } else {
+            currentStreak = 0; 
+        }
+        
+        document.getElementById("current-streak").textContent = currentStreak;
+        
+        document.querySelectorAll(".key").forEach(key => key.disabled = true);
+        document.getElementById("hint-btn").disabled = true;
+        document.getElementById("restart-btn").style.display = "inline-block";
+        document.getElementById("restart-btn").style.backgroundColor = isWin ? "#28a745" : "#d9534f";
+    }
+
+    function updateGameUI() {
+        document.getElementById("status-display").textContent = `Yanlış Harf: ${currentErrors} / ${maxErrors}`;
+        
+        let displayStr = "";
+        for (let i = 0; i < targetWord.length; i++) {
+            if (i < currentLetterIndex) {
+                displayStr += targetWord[i] + " "; 
+            } else {
+                displayStr += "_ "; 
+            }
+        }
+        document.getElementById("word-display").textContent = displayStr.trim();
+    }
+
+    loadNextCard();
+    initGame();
+})();
+</script>
+
+</body>
+</html>
+    
