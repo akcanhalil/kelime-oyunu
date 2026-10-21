@@ -239,20 +239,6 @@
         document.getElementById("theme-toggle").textContent = isDarkMode ? "☀️ Mod" : "🌙 Mod";
     });
 
-    // YDS/YÖKDİL Seviyesi 10 Kelimelik JSON Veritabanı
-    const wordDatabase = [
-        { id: 1, word: "deception", turkish: "aldatma, hile", synonyms: ["dishonesty", "trickery"], antonyms: ["honesty", "truth"], sentence: "He was found guilty of obtaining money by deception." },
-        { id: 2, word: "humid", turkish: "nemli", synonyms: ["muggy", "moist"], antonyms: ["dry"], sentence: "New York is very hot and humid in the summer." },
-        { id: 3, word: "disperse", turkish: "dağıtmak, dağılmak", synonyms: ["scatter", "distribute"], antonyms: ["gather", "collect"], sentence: "Police used tear gas to disperse the crowd." },
-        { id: 4, word: "unprecedented", turkish: "eşi görülmemiş", synonyms: ["unparalleled", "exceptional"], antonyms: ["normal", "common"], sentence: "The internet has given people unprecedented access to information." },
-        { id: 5, word: "ambiguous", turkish: "belirsiz, iki anlamlı", synonyms: ["vague", "unclear"], antonyms: ["clear", "explicit"], sentence: "His reply to my question was somewhat ambiguous." },
-        { id: 6, word: "fluctuate", turkish: "dalgalanmak", synonyms: ["vary", "change"], antonyms: ["stabilize", "remain"], sentence: "Vegetable prices fluctuate according to the season." },
-        { id: 7, word: "reluctant", turkish: "isteksiz", synonyms: ["unwilling", "hesitant"], antonyms: ["willing", "eager"], sentence: "Many parents feel reluctant to talk openly with their children." },
-        { id: 8, word: "vital", turkish: "hayati, çok önemli", synonyms: ["crucial", "essential"], antonyms: ["unimportant", "trivial"], sentence: "Vitamins are vital for maintaining good health." },
-        { id: 9, word: "consequence", turkish: "sonuç", synonyms: ["result", "outcome"], antonyms: ["cause", "origin"], sentence: "Global warming is a direct consequence of deforestation." },
-        { id: 10, word: "abundant", turkish: "bol, bereketli", synonyms: ["plentiful", "copious"], antonyms: ["scarce", "rare"], sentence: "There is abundant evidence that cars have a harmful effect on the environment." }
-    ];
-
     // Menü Geçişleri
     document.getElementById("nav-learn").addEventListener("click", () => switchTab('ogrenme-ekrani'));
     document.getElementById("nav-game").addEventListener("click", () => switchTab('oyun-ekrani'));
