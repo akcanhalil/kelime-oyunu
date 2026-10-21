@@ -230,297 +230,310 @@
         <div class="score-board">En Uzun Galibiyet Serisi<br><br><span id="max-score-display">0</span> Kelime</div>
     </div>
 
-<script>
-(function() {
-    let isDarkMode = false;
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-        isDarkMode = !isDarkMode;
-        document.body.setAttribute("data-theme", isDarkMode ? "dark" : "light");
-        document.getElementById("theme-toggle").textContent = isDarkMode ? "☀️ Mod" : "🌙 Mod";
-    });
+    <!-- ÖNCE HARİCİ KELİME LİSTESİ YÜKLENİYOR -->
+    <script src="kelimeler.js"></script>
 
-    // Menü Geçişleri
-    document.getElementById("nav-learn").addEventListener("click", () => switchTab('ogrenme-ekrani'));
-    document.getElementById("nav-game").addEventListener("click", () => switchTab('oyun-ekrani'));
-    document.getElementById("nav-score").addEventListener("click", () => switchTab('skor-ekrani'));
-    document.getElementById("nav-exercise").addEventListener("click", () => {
-        switchTab('egzersiz-ekrani');
-        initClozeTest(); // Egzersize tıklandığında soruyu yükle
-    });
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-    }
-
-    // --- SESLİ OKUMA (TEXT TO SPEECH) ---
-    window.playAudio = function(word) {
-        let utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.85; // Net anlaşılması için biraz yavaş
-        window.speechSynthesis.speak(utterance);
-    };
-
-    // --- ÖĞRENME KARTI ---
-    let learningDeck = [...wordDatabase];
-    let currentCardIndex = 0;
-
-    window.markLearned = function() { currentCardIndex++; loadNextCard(); };
-    window.markUnlearned = function() { learningDeck.push(learningDeck[currentCardIndex]); currentCardIndex++; loadNextCard(); };
-
-    function loadNextCard() {
-        const wrapper = document.getElementById("card-wrapper");
-        if (currentCardIndex >= learningDeck.length) {
-            wrapper.innerHTML = `<div class="scrapbook-card"><h3>🎉 Harika!</h3><p>Bugünlük bitti.</p></div>`;
-            return;
-        }
-        let item = learningDeck[currentCardIndex];
-        wrapper.innerHTML = `
-            <div class="scrapbook-card">
-                <h2 style="font-size: 2em; margin-top: 5px; display:flex; justify-content:center; align-items:center; gap:10px;">
-                    ${item.word.toUpperCase()}
-                    <button onclick="playAudio('${item.word}')" style="font-size:0.6em; padding:5px 10px; border:2px solid var(--text-color); border-radius:50%; background:transparent; cursor:pointer;">🔊</button>
-                </h2>
-                <p><strong>Türkçe:</strong> ${item.turkish}</p>
-                <p><strong>Eş Anlam:</strong> ${item.synonyms.join(', ')}</p>
-                <p><strong>Zıt Anlam:</strong> ${item.antonyms.join(', ')}</p>
-                <div class="card-controls">
-                    <button class="btn-wrong" onclick="markUnlearned()">❌ Öğrenmedim</button>
-                    <button class="btn-right" onclick="markLearned()">✅ Öğrendim</button>
-                </div>
-            </div>`;
-    }
-
-    // --- CLOZE TEST (BOŞLUK DOLDURMA) MANTIĞI ---
-    let clozeDeck = [...wordDatabase];
-    let currentClozeItem = null;
-
-    function initClozeTest() {
-        if (clozeDeck.length === 0) clozeDeck = [...wordDatabase]; 
-        
-        const randomIndex = Math.floor(Math.random() * clozeDeck.length);
-        currentClozeItem = clozeDeck[randomIndex];
-        clozeDeck.splice(randomIndex, 1); 
-
-        // Kelimeyi cümleden gizle
-        const regex = new RegExp("\\b" + currentClozeItem.word + "\\b", "gi");
-        const hiddenSentence = currentClozeItem.sentence.replace(regex, "_______");
-        
-        document.getElementById("cloze-sentence").innerHTML = hiddenSentence;
-        document.getElementById("cloze-next-btn").style.display = "none";
-        document.getElementById("cloze-feedback").textContent = "";
-
-        // Şıkları hazırla (1 doğru, 3 yanlış)
-        let options = [currentClozeItem.word];
-        let wrongOptions = wordDatabase.filter(w => w.id !== currentClozeItem.id);
-        
-        wrongOptions.sort(() => 0.5 - Math.random());
-        options.push(wrongOptions[0].word, wrongOptions[1].word, wrongOptions[2].word);
-        
-        options.sort(() => 0.5 - Math.random());
-
-        const optionsContainer = document.getElementById("cloze-options");
-        optionsContainer.innerHTML = "";
-        
-        options.forEach(opt => {
-            let btn = document.createElement("button");
-            btn.className = "cloze-btn";
-            btn.textContent = opt.toLowerCase();
-            btn.onclick = () => checkClozeAnswer(btn, opt);
-            optionsContainer.appendChild(btn);
+    <!-- SONRA UYGULAMANIN ANA KODLARI ÇALIŞIYOR -->
+    <script>
+    (function() {
+        let isDarkMode = false;
+        document.getElementById("theme-toggle").addEventListener("click", () => {
+            isDarkMode = !isDarkMode;
+            document.body.setAttribute("data-theme", isDarkMode ? "dark" : "light");
+            document.getElementById("theme-toggle").textContent = isDarkMode ? "☀️ Mod" : "🌙 Mod";
         });
-    }
 
-    function checkClozeAnswer(btn, selectedWord) {
-        const buttons = document.querySelectorAll(".cloze-btn");
-        buttons.forEach(b => b.disabled = true); // Diğer şıkları kapat
+        // Menü Geçişleri
+        document.getElementById("nav-learn").addEventListener("click", () => switchTab('ogrenme-ekrani'));
+        document.getElementById("nav-game").addEventListener("click", () => switchTab('oyun-ekrani'));
+        document.getElementById("nav-score").addEventListener("click", () => switchTab('skor-ekrani'));
+        document.getElementById("nav-exercise").addEventListener("click", () => {
+            switchTab('egzersiz-ekrani');
+            initClozeTest(); // Egzersize tıklandığında soruyu yükle
+        });
 
-        if (selectedWord === currentClozeItem.word) {
-            btn.classList.add("correct");
-            document.getElementById("cloze-feedback").textContent = "✅ Harika! Doğru bildin.";
-            document.getElementById("cloze-feedback").style.color = "#28a745";
+        function switchTab(tabId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // --- SESLİ OKUMA (TEXT TO SPEECH) ---
+        window.playAudio = function(word) {
+            let utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85; // Net anlaşılması için biraz yavaş
+            window.speechSynthesis.speak(utterance);
+        };
+
+        // --- ÖĞRENME KARTI ---
+        let learningDeck = [...wordDatabase];
+        let currentCardIndex = 0;
+
+        window.markLearned = function() { currentCardIndex++; loadNextCard(); };
+        window.markUnlearned = function() { learningDeck.push(learningDeck[currentCardIndex]); currentCardIndex++; loadNextCard(); };
+
+        function loadNextCard() {
+            const wrapper = document.getElementById("card-wrapper");
+            if (currentCardIndex >= learningDeck.length) {
+                wrapper.innerHTML = `<div class="scrapbook-card"><h3>🎉 Harika!</h3><p>Bugünlük bitti.</p></div>`;
+                return;
+            }
+            let item = learningDeck[currentCardIndex];
             
-            // Cümleyi açık ve vurgulu haliyle göster
-            document.getElementById("cloze-sentence").innerHTML = currentClozeItem.sentence.replace(
-                new RegExp("\\b" + currentClozeItem.word + "\\b", "gi"), 
-                `<span style="color:#28a745; font-weight:bold; text-decoration:underline;">${currentClozeItem.word}</span>`
-            );
-        } else {
-            btn.classList.add("wrong");
-            document.getElementById("cloze-feedback").textContent = `❌ Yanlış! Doğru cevap: ${currentClozeItem.word.toUpperCase()}`;
-            document.getElementById("cloze-feedback").style.color = "#d9534f";
+            // Eğer eş anlam/zıt anlam dizileri tanımlanmamışsa hata vermemesi için boş dizi kontrolü
+            const synonymsText = item.synonyms ? item.synonyms.join(', ') : "-";
+            const antonymsText = item.antonyms ? item.antonyms.join(', ') : "-";
             
-            // Doğru şıkkı yeşil yap
-            buttons.forEach(b => {
-                if (b.textContent === currentClozeItem.word.toLowerCase()) {
-                    b.classList.add("correct");
-                }
+            wrapper.innerHTML = `
+                <div class="scrapbook-card">
+                    <h2 style="font-size: 2em; margin-top: 5px; display:flex; justify-content:center; align-items:center; gap:10px;">
+                        ${item.word.toUpperCase()}
+                        <button onclick="playAudio('${item.word}')" style="font-size:0.6em; padding:5px 10px; border:2px solid var(--text-color); border-radius:50%; background:transparent; cursor:pointer;">🔊</button>
+                    </h2>
+                    <p><strong>Türkçe:</strong> ${item.turkish}</p>
+                    <p><strong>Eş Anlam:</strong> ${synonymsText}</p>
+                    <p><strong>Zıt Anlam:</strong> ${antonymsText}</p>
+                    <div class="card-controls">
+                        <button class="btn-wrong" onclick="markUnlearned()">❌ Öğrenmedim</button>
+                        <button class="btn-right" onclick="markLearned()">✅ Öğrendim</button>
+                    </div>
+                </div>`;
+        }
+
+        // --- CLOZE TEST (BOŞLUK DOLDURMA) MANTIĞI ---
+        let clozeDeck = [...wordDatabase];
+        let currentClozeItem = null;
+
+        function initClozeTest() {
+            if (clozeDeck.length === 0) clozeDeck = [...wordDatabase]; 
+            
+            const randomIndex = Math.floor(Math.random() * clozeDeck.length);
+            currentClozeItem = clozeDeck[randomIndex];
+            clozeDeck.splice(randomIndex, 1); 
+
+            // Cümle yoksa varsayılan bir uyarı göster
+            let itemSentence = currentClozeItem.sentence || `${currentClozeItem.word} kelimesi için örnek cümle bulunamadı.`;
+            
+            // Kelimeyi cümleden gizle
+            const regex = new RegExp("\\b" + currentClozeItem.word + "\\b", "gi");
+            const hiddenSentence = itemSentence.replace(regex, "_______");
+            
+            document.getElementById("cloze-sentence").innerHTML = hiddenSentence;
+            document.getElementById("cloze-next-btn").style.display = "none";
+            document.getElementById("cloze-feedback").textContent = "";
+
+            // Şıkları hazırla (1 doğru, 3 yanlış)
+            let options = [currentClozeItem.word];
+            let wrongOptions = wordDatabase.filter(w => w.word !== currentClozeItem.word); // ID yerine kelime eşleşmesi kontrolü
+            
+            wrongOptions.sort(() => 0.5 - Math.random());
+            if(wrongOptions.length >= 3) {
+                options.push(wrongOptions[0].word, wrongOptions[1].word, wrongOptions[2].word);
+            }
+            
+            options.sort(() => 0.5 - Math.random());
+
+            const optionsContainer = document.getElementById("cloze-options");
+            optionsContainer.innerHTML = "";
+            
+            options.forEach(opt => {
+                let btn = document.createElement("button");
+                btn.className = "cloze-btn";
+                btn.textContent = opt.toLowerCase();
+                btn.onclick = () => checkClozeAnswer(btn, opt);
+                optionsContainer.appendChild(btn);
             });
         }
-        document.getElementById("cloze-next-btn").style.display = "inline-block";
-    }
 
-    document.getElementById("cloze-next-btn").addEventListener("click", initClozeTest);
+        function checkClozeAnswer(btn, selectedWord) {
+            const buttons = document.querySelectorAll(".cloze-btn");
+            buttons.forEach(b => b.disabled = true); // Diğer şıkları kapat
 
-    // --- BALON OYUNU VE SKOR MANTIĞI ---
-    let targetWord = "";
-    let currentLetterIndex = 0; 
-    let currentErrors = 0;
-    const maxErrors = 5;
-    let isGameOver = false;
-    let hintsUsed = 0;
-    const maxHints = 3;
-    let currentStreak = 0;
-    let maxScore = localStorage.getItem("maxBalloonScore") || 0;
-    document.getElementById("max-score-display").textContent = maxScore;
+            let itemSentence = currentClozeItem.sentence || `${currentClozeItem.word} kelimesi için örnek cümle bulunamadı.`;
 
-    document.getElementById("hint-btn").addEventListener("click", useHint);
-    document.getElementById("restart-btn").addEventListener("click", initGame);
+            if (selectedWord === currentClozeItem.word) {
+                btn.classList.add("correct");
+                document.getElementById("cloze-feedback").textContent = "✅ Harika! Doğru bildin.";
+                document.getElementById("cloze-feedback").style.color = "#28a745";
+                
+                // Cümleyi açık ve vurgulu haliyle göster
+                document.getElementById("cloze-sentence").innerHTML = itemSentence.replace(
+                    new RegExp("\\b" + currentClozeItem.word + "\\b", "gi"), 
+                    `<span style="color:#28a745; font-weight:bold; text-decoration:underline;">${currentClozeItem.word}</span>`
+                );
+            } else {
+                btn.classList.add("wrong");
+                document.getElementById("cloze-feedback").textContent = `❌ Yanlış! Doğru cevap: ${currentClozeItem.word.toUpperCase()}`;
+                document.getElementById("cloze-feedback").style.color = "#d9534f";
+                
+                // Doğru şıkkı yeşil yap
+                buttons.forEach(b => {
+                    if (b.textContent === currentClozeItem.word.toLowerCase()) {
+                        b.classList.add("correct");
+                    }
+                });
+            }
+            document.getElementById("cloze-next-btn").style.display = "inline-block";
+        }
 
-    function initGame() {
-        const selectedItem = wordDatabase[Math.floor(Math.random() * wordDatabase.length)];
-        targetWord = selectedItem.word.toUpperCase();
-        
-        currentLetterIndex = 0;
-        currentErrors = 0;
-        hintsUsed = 0;
-        isGameOver = false;
+        document.getElementById("cloze-next-btn").addEventListener("click", initClozeTest);
 
-        let availableHints = [];
-        if (selectedItem.synonyms && selectedItem.synonyms.length > 0) availableHints.push({ title: "Eş Anlam", text: selectedItem.synonyms.join(", ") });
-        if (selectedItem.antonyms && selectedItem.antonyms.length > 0) availableHints.push({ title: "Zıt Anlam", text: selectedItem.antonyms.join(", ") });
-        if (selectedItem.turkish) availableHints.push({ title: "Türkçe", text: selectedItem.turkish });
+        // --- BALON OYUNU VE SKOR MANTIĞI ---
+        let targetWord = "";
+        let currentLetterIndex = 0; 
+        let currentErrors = 0;
+        const maxErrors = 5;
+        let isGameOver = false;
+        let hintsUsed = 0;
+        const maxHints = 3;
+        let currentStreak = 0;
+        let maxScore = localStorage.getItem("maxBalloonScore") || 0;
+        document.getElementById("max-score-display").textContent = maxScore;
 
-        const randomHint = availableHints[Math.floor(Math.random() * availableHints.length)];
-        document.getElementById("question-text").textContent = `İpucu (${randomHint.title}): ${randomHint.text.toUpperCase()}`;
+        document.getElementById("hint-btn").addEventListener("click", useHint);
+        document.getElementById("restart-btn").addEventListener("click", initGame);
 
-        document.getElementById("message-box").textContent = "";
-        document.getElementById("restart-btn").style.display = "none";
-        
-        const balloon = document.getElementById("balloon");
-        balloon.style.display = "block";
-        balloon.style.transform = "scale(1)";
-        document.getElementById("hint-left").textContent = maxHints;
-        document.getElementById("hint-btn").disabled = false;
-        document.querySelectorAll(".shard").forEach(el => el.remove());
-        
-        createKeyboard();
-        updateGameUI();
-    }
+        function initGame() {
+            const selectedItem = wordDatabase[Math.floor(Math.random() * wordDatabase.length)];
+            targetWord = selectedItem.word.toUpperCase();
+            
+            currentLetterIndex = 0;
+            currentErrors = 0;
+            hintsUsed = 0;
+            isGameOver = false;
 
-    function useHint() {
-        if (isGameOver || hintsUsed >= maxHints || currentLetterIndex >= targetWord.length) return;
-        hintsUsed++;
-        currentLetterIndex++; 
-        document.getElementById("hint-left").textContent = maxHints - hintsUsed;
-        const balloon = document.getElementById("balloon");
-        balloon.style.transform = `scale(${1 + (hintsUsed * 0.4)})`; 
+            let availableHints = [];
+            if (selectedItem.synonyms && selectedItem.synonyms.length > 0) availableHints.push({ title: "Eş Anlam", text: selectedItem.synonyms.join(", ") });
+            if (selectedItem.antonyms && selectedItem.antonyms.length > 0) availableHints.push({ title: "Zıt Anlam", text: selectedItem.antonyms.join(", ") });
+            if (selectedItem.turkish) availableHints.push({ title: "Türkçe", text: selectedItem.turkish });
 
-        if (hintsUsed >= maxHints) {
-            triggerExplosion();
-            finalizeGame(false, "💥 Balon fazla şişti ve PATLADI!");
-        } else {
+            const randomHint = availableHints[Math.floor(Math.random() * availableHints.length)];
+            document.getElementById("question-text").textContent = `İpucu (${randomHint.title}): ${randomHint.text.toUpperCase()}`;
+
+            document.getElementById("message-box").textContent = "";
+            document.getElementById("restart-btn").style.display = "none";
+            
+            const balloon = document.getElementById("balloon");
+            balloon.style.display = "block";
+            balloon.style.transform = "scale(1)";
+            document.getElementById("hint-left").textContent = maxHints;
+            document.getElementById("hint-btn").disabled = false;
+            document.querySelectorAll(".shard").forEach(el => el.remove());
+            
+            createKeyboard();
+            updateGameUI();
+        }
+
+        function useHint() {
+            if (isGameOver || hintsUsed >= maxHints || currentLetterIndex >= targetWord.length) return;
+            hintsUsed++;
+            currentLetterIndex++; 
+            document.getElementById("hint-left").textContent = maxHints - hintsUsed;
+            const balloon = document.getElementById("balloon");
+            balloon.style.transform = `scale(${1 + (hintsUsed * 0.4)})`; 
+
+            if (hintsUsed >= maxHints) {
+                triggerExplosion();
+                finalizeGame(false, "💥 Balon fazla şişti ve PATLADI!");
+            } else {
+                checkGameStatus();
+                updateGameUI();
+            }
+        }
+
+        function triggerExplosion() {
+            const container = document.getElementById("balloon-container");
+            document.getElementById("balloon").style.display = "none"; 
+            for(let i=0; i<6; i++) {
+                let shard = document.createElement("div");
+                shard.className = "shard";
+                let tx = (Math.random() * 100 - 50) + "px";
+                let ty = (Math.random() * -100 - 20) + "px";
+                let rot = (Math.random() * 360) + "deg";
+                shard.style.setProperty('--tx', tx);
+                shard.style.setProperty('--ty', ty);
+                shard.style.setProperty('--rot', rot);
+                shard.style.animation = "explode 0.6s forwards ease-out";
+                container.appendChild(shard);
+            }
+        }
+
+        function createKeyboard() {
+            const keyboardEl = document.getElementById("keyboard");
+            keyboardEl.innerHTML = "";
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
+                const btn = document.createElement("button");
+                btn.textContent = letter;
+                btn.className = "key";
+                btn.addEventListener("click", () => handleGuess(letter, btn));
+                keyboardEl.appendChild(btn);
+            });
+        }
+
+        function handleGuess(letter, btn) {
+            if (isGameOver) return;
+            let originalColor = btn.style.backgroundColor;
+            if (letter === targetWord[currentLetterIndex]) {
+                currentLetterIndex++; 
+                btn.style.backgroundColor = "#28a745"; btn.style.color = "#fff";
+                setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
+            } else {
+                currentErrors++; 
+                btn.style.backgroundColor = "#d9534f"; btn.style.color = "#fff";
+                setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
+            }
             checkGameStatus();
             updateGameUI();
         }
-    }
 
-    function triggerExplosion() {
-        const container = document.getElementById("balloon-container");
-        document.getElementById("balloon").style.display = "none"; 
-        for(let i=0; i<6; i++) {
-            let shard = document.createElement("div");
-            shard.className = "shard";
-            let tx = (Math.random() * 100 - 50) + "px";
-            let ty = (Math.random() * -100 - 20) + "px";
-            let rot = (Math.random() * 360) + "deg";
-            shard.style.setProperty('--tx', tx);
-            shard.style.setProperty('--ty', ty);
-            shard.style.setProperty('--rot', rot);
-            shard.style.animation = "explode 0.6s forwards ease-out";
-            container.appendChild(shard);
-        }
-    }
-
-    function createKeyboard() {
-        const keyboardEl = document.getElementById("keyboard");
-        keyboardEl.innerHTML = "";
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
-            const btn = document.createElement("button");
-            btn.textContent = letter;
-            btn.className = "key";
-            btn.addEventListener("click", () => handleGuess(letter, btn));
-            keyboardEl.appendChild(btn);
-        });
-    }
-
-    function handleGuess(letter, btn) {
-        if (isGameOver) return;
-        let originalColor = btn.style.backgroundColor;
-        if (letter === targetWord[currentLetterIndex]) {
-            currentLetterIndex++; 
-            btn.style.backgroundColor = "#28a745"; btn.style.color = "#fff";
-            setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
-        } else {
-            currentErrors++; 
-            btn.style.backgroundColor = "#d9534f"; btn.style.color = "#fff";
-            setTimeout(() => { btn.style.backgroundColor = originalColor; btn.style.color = ""; }, 200);
-        }
-        checkGameStatus();
-        updateGameUI();
-    }
-
-    function checkGameStatus() {
-        if (isGameOver) return;
-        if (currentErrors >= maxErrors) {
-            triggerExplosion();
-            finalizeGame(false, "❌ Yanlış harfler bitti!");
-        } 
-        else if (currentLetterIndex === targetWord.length) {
-            finalizeGame(true, "🎉 TEBRİKLER! Balonu kurtardın.");
-        }
-    }
-
-    function finalizeGame(isWin, message) {
-        isGameOver = true;
-        const msgBox = document.getElementById("message-box");
-        msgBox.textContent = `${message} Kelime: ${targetWord}`;
-        msgBox.style.color = isWin ? "#28a745" : "#d9534f";
-        
-        if (isWin) {
-            currentStreak++;
-            if (currentStreak > maxScore) {
-                maxScore = currentStreak;
-                localStorage.setItem("maxBalloonScore", maxScore);
-                document.getElementById("max-score-display").textContent = maxScore;
+        function checkGameStatus() {
+            if (isGameOver) return;
+            if (currentErrors >= maxErrors) {
+                triggerExplosion();
+                finalizeGame(false, "❌ Yanlış harfler bitti!");
+            } 
+            else if (currentLetterIndex === targetWord.length) {
+                finalizeGame(true, "🎉 TEBRİKLER! Balonu kurtardın.");
             }
-        } else {
-            currentStreak = 0; 
         }
-        document.getElementById("current-streak").textContent = currentStreak;
-        document.querySelectorAll(".key").forEach(key => key.disabled = true);
-        document.getElementById("hint-btn").disabled = true;
-        document.getElementById("restart-btn").style.display = "inline-block";
-        document.getElementById("restart-btn").style.backgroundColor = isWin ? "#28a745" : "#d9534f";
-    }
 
-    function updateGameUI() {
-        document.getElementById("status-display").textContent = `Yanlış Harf: ${currentErrors} / ${maxErrors}`;
-        let displayStr = "";
-        for (let i = 0; i < targetWord.length; i++) {
-            if (i < currentLetterIndex) { displayStr += targetWord[i] + " "; } 
-            else { displayStr += "_ "; }
+        function finalizeGame(isWin, message) {
+            isGameOver = true;
+            const msgBox = document.getElementById("message-box");
+            msgBox.textContent = `${message} Kelime: ${targetWord}`;
+            msgBox.style.color = isWin ? "#28a745" : "#d9534f";
+            
+            if (isWin) {
+                currentStreak++;
+                if (currentStreak > maxScore) {
+                    maxScore = currentStreak;
+                    localStorage.setItem("maxBalloonScore", maxScore);
+                    document.getElementById("max-score-display").textContent = maxScore;
+                }
+            } else {
+                currentStreak = 0; 
+            }
+            document.getElementById("current-streak").textContent = currentStreak;
+            document.querySelectorAll(".key").forEach(key => key.disabled = true);
+            document.getElementById("hint-btn").disabled = true;
+            document.getElementById("restart-btn").style.display = "inline-block";
+            document.getElementById("restart-btn").style.backgroundColor = isWin ? "#28a745" : "#d9534f";
         }
-        document.getElementById("word-display").textContent = displayStr.trim();
-    }
 
-    // İlk Yüklemeler
-    loadNextCard();
-    initGame();
-})();
-</script>
-<script src="kelimeler.js"></script>
-<!-- Kendi yazdığın ana JS dosyan kelimeler.js'den SONRA gelmeli -->
-<script src="script.js"></script> 
+        function updateGameUI() {
+            document.getElementById("status-display").textContent = `Yanlış Harf: ${currentErrors} / ${maxErrors}`;
+            let displayStr = "";
+            for (let i = 0; i < targetWord.length; i++) {
+                if (i < currentLetterIndex) { displayStr += targetWord[i] + " "; } 
+                else { displayStr += "_ "; }
+            }
+            document.getElementById("word-display").textContent = displayStr.trim();
+        }
+
+        // İlk Yüklemeler
+        loadNextCard();
+        initGame();
+    })();
+    </script>
 </body>
 </html>
